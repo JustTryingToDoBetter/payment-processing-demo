@@ -1,0 +1,19 @@
+# Payment Processing Demo - Requirements
+
+# Core dependencies
+cryptography>=41.0.0    # For AES-256-GCM encryption
+
+# Testing
+pytest>=7.0.0           # Testing framework
+
+# Optional - for running the API server in production
+# (not needed for demo as we use stdlib http.server)
+# flask>=2.0.0
+# gunicorn>=21.0.0
+
+# Optional - for type checking
+# mypy>=1.0.0
+
+# Optional - for linting
+# flake8>=6.0.0
+# black>=23.0.0

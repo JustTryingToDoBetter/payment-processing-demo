@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout - Payment Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Header -->
+        <header class="checkout-header">
+            <h1>🔒 Secure Checkout</h1>
+            <p class="demo-notice">
+                ⚠️ DEMO ONLY - Do not enter real card details
+            </p>
+        </header>
+
+        <!-- Order Summary -->
+        <section class="order-summary">
+            <h2>Order Summary</h2>
+            <div class="order-items">
+                <div class="order-item">
+                    <span class="item-name">Wireless Mouse</span>
+                    <span class="item-price">$29.99</span>
+                </div>
+                <div class="order-item">
+                    <span class="item-name">USB-C Cable (x2)</span>
+                    <span class="item-price">$25.98</span>
+                </div>
+                <div class="order-item">
+                    <span class="item-name">Laptop Stand</span>
+                    <span class="item-price">$49.99</span>
+                </div>
+            </div>
+            <div class="order-totals">
+                <div class="total-line">
+                    <span>Subtotal</span>
+                    <span>$105.96</span>
+                </div>
+                <div class="total-line">
+                    <span>Shipping</span>
+                    <span>FREE</span>
+                </div>
+                <div class="total-line">
+                    <span>Tax</span>
+                    <span>$8.74</span>
+                </div>
+                <div class="total-line total-final">
+                    <span>Total</span>
+                    <span id="order-total">$114.70</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment Form -->
+        <section class="payment-section">
+            <h2>Payment Details</h2>
+            
+            <!-- 
+                IMPORTANT: In a real implementation, this form would be:
+                1. Hosted in an iframe from the payment provider
+                2. Or using a JavaScript SDK that tokenizes on the client
+                
+                Card data should NEVER touch your server!
+            -->
+            
+            <form id="payment-form" class="payment-form">
+                <!-- Card Number -->
+                <div class="form-group">
+                    <label for="card-number">Card Number</label>
+                    <div class="card-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="card-number" 
+                            name="card_number"
+                            placeholder="4242 4242 4242 4242"
+                            maxlength="19"
+                            autocomplete="cc-number"
+                            required
+                        >
+                        <span id="card-brand" class="card-brand"></span>
+                    </div>
+                    <div class="input-hint">
+                        Test cards: 4242... (success), 4000000000009995 (insufficient)
+                    </div>
+                </div>
+
+                <!-- Expiry and CVV -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-expiry">Expiry Date</label>
+                        <input 
+                            type="text" 
+                            id="card-expiry" 
+                            name="expiry"
+                            placeholder="MM/YY"
+                            maxlength="5"
+                            autocomplete="cc-exp"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="card-cvv">CVV</label>
+                        <input 
+                            type="text" 
+                            id="card-cvv" 
+                            name="cvv"
+                            placeholder="123"
+                            maxlength="4"
+                            autocomplete="cc-csc"
+                            required
+                        >
+                        <div class="input-hint">3 digits on back</div>
+                    </div>
+                </div>
+
+                <!-- Cardholder Name -->
+                <div class="form-group">
+                    <label for="card-name">Cardholder Name</label>
+                    <input 
+                        type="text" 
+                        id="card-name" 
+                        name="name"
+                        placeholder="John Doe"
+                        autocomplete="cc-name"
+                        required
+                    >
+                </div>
+
+                <!-- Error Display -->
+                <div id="payment-errors" class="error-message" style="display: none;"></div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-button" class="submit-button">
+                    <span id="button-text">Pay $114.70</span>
+                    <span id="button-spinner" class="spinner" style="display: none;"></span>
+                </button>
+            </form>
+
+            <!-- Security Badges -->
+            <div class="security-badges">
+                <span class="badge">🔒 SSL Encrypted</span>
+                <span class="badge">✓ PCI Compliant</span>
+                <span class="badge">🛡️ 3D Secure Ready</span>
+            </div>
+        </section>
+
+        <!-- 3D Secure Modal (Hidden by default) -->
+        <div id="threeds-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Additional Verification Required</h3>
+                <p>Your bank requires additional verification.</p>
+                <div class="threeds-frame">
+                    <!-- In production, this would be an iframe to the bank's 3DS page -->
+                    <div class="mock-3ds">
+                        <p>🏦 Bank Verification</p>
+                        <p>Enter the code sent to your phone:</p>
+                        <input type="text" id="threeds-code" placeholder="123456">
+                        <button onclick="complete3DS()">Verify</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message (Hidden by default) -->
+        <div id="success-message" class="success-message" style="display: none;">
+            <div class="success-icon">✓</div>
+            <h2>Payment Successful!</h2>
+            <p>Thank you for your order.</p>
+            <p class="charge-id">Charge ID: <span id="charge-id"></span></p>
+        </div>
+    </div>
+
+    <!-- Educational Information -->
+    <div class="educational-info">
+        <h3>🎓 How This Works (Educational)</h3>
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>1. Tokenization</h4>
+                <p>Card data is sent directly to the payment gateway and exchanged for a token. Your server never sees the actual card number.</p>
+            </div>
+            <div class="info-card">
+                <h4>2. Authorization</h4>
+                <p>The token is sent to your server, which creates a charge. The gateway contacts the card network and issuing bank.</p>
+            </div>
+            <div class="info-card">
+                <h4>3. 3D Secure</h4>
+                <p>For high-risk transactions, the bank may require additional verification (like SMS codes).</p>
+            </div>
+            <div class="info-card">
+                <h4>4. Confirmation</h4>
+                <p>Once approved, your server receives confirmation and can fulfill the order.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="checkout.js"></script>
+</body>
+</html>
